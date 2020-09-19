@@ -1,0 +1,4 @@
+quartus_pgm -m jtag -o "p;firmware.sof"
+nios2-swexample-create.exe --sopc-file=softcore.sopcinfo --type=hello_world_small --elf-name=program.elf --app-dir=program --bsp-dir=program_bsp
+nios2-download -g program.elf
+nios2-terminal
