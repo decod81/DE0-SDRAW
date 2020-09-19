@@ -60,6 +60,8 @@ alt_u8 crc7(alt_u8 a, alt_u8 b, alt_u8 c, alt_u8 d, alt_u8 e) {
   return crc;
 }
 
+alt_u8 id0, id1;
+
 CMD(alt_u8 a, alt_u8 b, alt_u8 c, alt_u8 d, alt_u8 e) {
   alt_u8 sdcmd[6] = {a, b, c, d, e, (crc7(a, b, c, d, e) << 1)|1}, i, j, k;
 
@@ -93,7 +95,7 @@ CMD(alt_u8 a, alt_u8 b, alt_u8 c, alt_u8 d, alt_u8 e) {
       if(SD_TEST_CMD)
         j |= 0x80 >> (i & 7);
     }
-    alt_printf("SD card ID: %x", j);
+    alt_printf("SD card ID: %x", id0 = j);
     j = 0;
     for(i=0; i<8; i++) {
       SD_CLK_LOW;
@@ -101,7 +103,7 @@ CMD(alt_u8 a, alt_u8 b, alt_u8 c, alt_u8 d, alt_u8 e) {
       if(SD_TEST_CMD)
         j |= 0x80 >> (i & 7);
     }
-    alt_printf("%x\n\n", j);
+    alt_printf("%x\n\n", id1 = j);
       SD_CMD_OUT;
   }
   for(i=0; i<144; i++) {
@@ -124,23 +126,21 @@ int main() {
   }
   SD_DAT_IN;
 
-  CMD(0x40, 0x00, 0x00, 0x00, 0x00); usleep(10000);
-  CMD(0x48, 0x00, 0x00, 0x01, 0xAA); usleep(10000);
-  CMD(0x77, 0x00, 0x00, 0x00, 0x00); usleep(10000);
-  CMD(0x69, 0x40, 0xFF, 0x80, 0x00); usleep(10000);
-  CMD(0x77, 0x00, 0x00, 0x00, 0x00); usleep(10000);
-  CMD(0x69, 0x40, 0xFF, 0x80, 0x00); usleep(10000);
-  CMD(0x42, 0x00, 0x00, 0x00, 0x00); usleep(10000);
-  CMD(0x43, 0x00, 0x00, 0x00, 0x00); usleep(10000);
-  CMD(0x47, 0x59, 0xB4, 0x00, 0x00); usleep(10000); /* SD card ID needs to be used here */
+  CMD(0x40, 0x00, 0x00, 0x00, 0x00); usleep(50000);
+  CMD(0x48, 0x00, 0x00, 0x01, 0xAA); usleep(50000);
+  CMD(0x77, 0x00, 0x00, 0x00, 0x00); usleep(50000);
+  CMD(0x69, 0x40, 0xFF, 0x80, 0x00); usleep(50000);
+  CMD(0x77, 0x00, 0x00, 0x00, 0x00); usleep(50000);
+  CMD(0x69, 0x40, 0xFF, 0x80, 0x00); usleep(50000);
+  CMD(0x42, 0x00, 0x00, 0x00, 0x00); usleep(50000);
+  CMD(0x43, 0x00, 0x00, 0x00, 0x00); usleep(50000);
+  CMD(0x47,  id0,  id1, 0x00, 0x00); usleep(50000); /* SD card ID needs to be used here */
 
   alt_printf("Reading block 0:\n\n");
   CMD(0x51, 0x00, 0x00, 0x00, 0x00); /* READ BLOCK 0 */
-  while(1) {
-	  SD_CLK_LOW;
-	  SD_CLK_HIGH;
-	  if((SD_TEST_DAT & 1) == 0)
-		  break;
+  while(SD_TEST_DAT & 1) {
+    SD_CLK_LOW;
+    SD_CLK_HIGH;
   }
   for(j=0; j<512; j++) {
     for(i=0; i<8; i++) {
@@ -160,11 +160,9 @@ int main() {
 
   alt_printf("Reading block 63:\n\n");
   CMD(0x51, 0x00, 0x00, 0x00, 63); /* READ BLOCK 63 */
-  while(1) {
+  while(SD_TEST_DAT & 1) {
     SD_CLK_LOW;
     SD_CLK_HIGH;
-    if((SD_TEST_DAT & 1) == 0)
-      break;
   }
   for(j=0; j<512; j++) {
     for(i=0; i<8; i++) {
