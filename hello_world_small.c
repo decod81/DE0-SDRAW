@@ -95,7 +95,7 @@ CMD(alt_u8 a, alt_u8 b, alt_u8 c, alt_u8 d, alt_u8 e) {
       if(SD_TEST_CMD)
         j |= 0x80 >> (i & 7);
     }
-    alt_printf("SD card ID: %x", id0 = j);
+    id0 = j;
     j = 0;
     for(i=0; i<8; i++) {
       SD_CLK_LOW;
@@ -103,8 +103,8 @@ CMD(alt_u8 a, alt_u8 b, alt_u8 c, alt_u8 d, alt_u8 e) {
       if(SD_TEST_CMD)
         j |= 0x80 >> (i & 7);
     }
-    alt_printf("%x\n\n", id1 = j);
-      SD_CMD_OUT;
+    id1 = j;
+    SD_CMD_OUT;
   }
   for(i=0; i<144; i++) {
     SD_CLK_LOW;
@@ -134,7 +134,7 @@ int main() {
   CMD(0x69, 0x40, 0xFF, 0x80, 0x00); usleep(50000);
   CMD(0x42, 0x00, 0x00, 0x00, 0x00); usleep(50000);
   CMD(0x43, 0x00, 0x00, 0x00, 0x00); usleep(50000);
-  CMD(0x47,  id0,  id1, 0x00, 0x00); usleep(50000); /* SD card ID needs to be used here */
+  CMD(0x47,  id0,  id1, 0x00, 0x00); usleep(50000);
 
   alt_printf("Reading block 0:\n\n");
   CMD(0x51, 0x00, 0x00, 0x00, 0x00); /* READ BLOCK 0 */
